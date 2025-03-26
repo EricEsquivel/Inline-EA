@@ -27,8 +27,8 @@ View the full demo against all 3 security products on my [website](https://erice
 
 ## Resources
 
-* [InlineExecute-Assembly](https://github.com/anthemtotheego/InlineExecute-Assembly) by AnthemToTheEgo - Provided a base template for inline executing .NET assemblies in C in a BOF. We just had to port it from C to C++.
-* [Maldev Academy](https://maldevacademy.com) - Contained a great module for inline executing .NET assemblies in C++ as a normal program, but not as a BOF. We combined this and AnthemToTheEgo's project to execute .NET assemblies in C++ as a BOF.
+* [InlineExecute-Assembly](https://github.com/anthemtotheego/InlineExecute-Assembly) by AnthemToTheEgo - Provided a base template for inline executing .NET assemblies in C in a BOF. I just had to port it from C to C++.
+* [Maldev Academy](https://maldevacademy.com) - Contained a great module for inline executing .NET assemblies in C++ as a normal program, but not as a BOF. I combined this and AnthemToTheEgo's project to execute .NET assemblies in C++ as a BOF.
 * [Unmanaged .NET Patching](https://kyleavery.com/posts/unmanaged-dotnet-patching) by Kyle Avery - Resource on how to patch System.Environment.Exit.
 * [New AMSI Bypass Technique Modifying CLR.DLL in Memory](https://practicalsecurityanalytics.com/new-amsi-bypss-technique-modifying-clr-dll-in-memory) by Practical Security Analytics LLC - Patching clr.dll to bypass AMSI.
 * [EAT Hooking](https://www.unknowncheats.me/forum/c-and-c/50426-eat-hooking-dlls.html) by Jimster480 - I came up with the idea to bypass ETW by EAT Hooking advapi32.dll!EventWrite and I found this general EAT Hooking code snippet which worked great.
