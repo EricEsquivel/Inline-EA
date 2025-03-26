@@ -1,6 +1,6 @@
 # Inline-EA
 Inline-EA is a Beacon Object File (BOF) to execute .NET assemblies in your current Beacon process.
-This tool was built to bypass the latest Elastic at the time of making, version 8.17.3. This tool also works against CrowdStrike Falcon and Microsoft Defender for Endpoint (MDE).
+This tool was built to bypass the latest Elastic at the time of making, version 8.17.4. This tool also works against CrowdStrike Falcon and Microsoft Defender for Endpoint (MDE).
 
 ## Features
 
