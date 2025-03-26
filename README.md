@@ -23,7 +23,7 @@ To run .NET assemblies, use the command: `inline-ea /Path/To/Assembly.exe arg1 a
 You can optionally use the `--patchexit` flag to patch System.Environment.Exit, though this isn't always necessary and it does get detected by Elastic.
 
 ## Demo
-View the full demo against all 3 security products on my [website](https://ericesquivel.github.io/)
+View the full demo against all 3 security products on my [website](https://ericesquivel.github.io/posts/inline-ea)
 
 ## Resources
 
