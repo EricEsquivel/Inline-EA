@@ -18,11 +18,11 @@ Put the `inline-ea.cna` Aggressor Script and `inline-ea.x64.o` BOF into the same
 
 You can run the help command in your Beacon console with: `help inline-ea`
 
-To run .NET assemblies, use the command: `inline-ea /Path/To/Assembly.exe arg1 arg2 arg3`
+To run .NET assemblies, use the command: `inline-ea /Path/To/Assembly.exe [arguments...]`
 
-You can optionally use the `--patchexit` flag to patch System.Environment.Exit, though this isn't always necessary and it does get detected by Elastic.
-
-Optionally: `--amsi` and `--etw` flags can be used to bypass AMSI and ETW respectively.
+Optionally:
+  `--amsi` and `--etw` flags can be used to bypass AMSI and ETW respectively.
+  `--patchexit` flag can be used to patch System.Environment.Exit, though this isn't always necessary and it does get detected by Elastic.
 
 ```
 beacon> help inline-ea
