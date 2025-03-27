@@ -19,7 +19,6 @@ WINBASEAPI void* WINAPI MSVCRT$malloc(SIZE_T);
 WINBASEAPI void* __cdecl MSVCRT$memcpy(void* __restrict _Dst, const void* __restrict _Src, size_t _MaxCount);
 WINBASEAPI void __cdecl MSVCRT$memset(void* dest, int c, size_t count);
 WINBASEAPI int __cdecl MSVCRT$strcmp(const char* _Str1, const char* _Str2);
-WINBASEAPI SIZE_T WINAPI MSVCRT$strlen(const char* str);
 WINBASEAPI int __cdecl MSVCRT$_snprintf(char* s, size_t n, const char* fmt, ...);
 WINBASEAPI errno_t __cdecl MSVCRT$mbstowcs_s(size_t* pReturnValue, wchar_t* wcstr, size_t sizeInWords, const char* mbstr, size_t count);
 WINBASEAPI size_t __cdecl MSVCRT$wcslen(const wchar_t *_Str);
