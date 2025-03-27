@@ -63,4 +63,4 @@ def inline_ea( demonID, * param: tuple ):
 
     return TaskID
 
-RegisterCommand( inline_ea, "", "inline-ea", "Execute .NET assemblies in the current beacon process. All optional arguments must be at the end of the command.", 0, "/path/to/Assembly.exe [arguments...] [--patchexit] [--amsi] [--etw]", "test")
+RegisterCommand( inline_ea, "", "inline-ea", "Execute .NET assemblies in the current beacon process. All optional arguments must be at the end of the command.", 0, "/path/to/Assembly.exe [arguments...] [--patchexit] [--amsi] [--etw]", "/opt/SharpTools/NetFramework_4.0_x64/Rubeus.exe triage --amsi --etw --patchexit")
