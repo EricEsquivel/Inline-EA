@@ -39,6 +39,7 @@ alias inline-ea {
         }
     }
 
+    # Remove trailing space if it exists
     $result = substr($result, 1, -1);
     $arguments = $result;
 

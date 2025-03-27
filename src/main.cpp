@@ -58,13 +58,13 @@ int go(char* args, ULONG length)
 
 BOOL Executedotnet(PBYTE AssemblyBytes, ULONG AssemblySize, LPCWSTR wAssemblyArguments, LPSTR* OutputBuffer, ULONG* OutputLength, BOOL patchExitflag, BOOL patchAmsiflag) // Heavily modified but credits to Maldev Academy and Anthemtotheego for the skeleton where I could then work on bypasses
 {
-    // /* Debugging shenanigans
-    // BeaconPrintf(CALLBACK_OUTPUT, "Assembly Bytes Address: 0x%p", AssemblyBytes);
-    // BeaconPrintf(CALLBACK_OUTPUT, "Output Buffer Address: 0x%p", OutputBuffer);
-    // BeaconPrintf(CALLBACK_OUTPUT, "OutputLength Address: 0x%p", OutputLength);
-    // BeaconPrintf(CALLBACK_OUTPUT, "Output Length: %lu", *OutputLength);
-    // BeaconPrintfW(CALLBACK_OUTPUT, L"Arguments: %s", wAssemblyArguments);
-	// */
+    /* Debugging shenanigans
+    BeaconPrintf(CALLBACK_OUTPUT, "Assembly Bytes Address: 0x%p", AssemblyBytes);
+    BeaconPrintf(CALLBACK_OUTPUT, "Output Buffer Address: 0x%p", OutputBuffer);
+    BeaconPrintf(CALLBACK_OUTPUT, "OutputLength Address: 0x%p", OutputLength);
+    BeaconPrintf(CALLBACK_OUTPUT, "Output Length: %lu", *OutputLength);
+    BeaconPrintfW(CALLBACK_OUTPUT, L"Arguments: %s", wAssemblyArguments);
+	*/
 	
 	// --------- Here we initialize the CLR ---------
 	HRESULT HResult = NULL;
