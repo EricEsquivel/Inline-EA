@@ -22,6 +22,23 @@ To run .NET assemblies, use the command: `inline-ea /Path/To/Assembly.exe arg1 a
 
 You can optionally use the `--patchexit` flag to patch System.Environment.Exit, though this isn't always necessary and it does get detected by Elastic.
 
+Optionally: `--amsi` and `--etw` flags can be used to bypass AMSI and ETW respectively.
+
+```
+beacon> help inline-ea
+Synopsis: inline-ea /path/to/Assembly.exe [arguments...] [--patchexit] [--amsi] [--etw]
+Description:
+  Execute a .NET assembly in the current beacon process.
+
+  --patchexit   Optional. Patches System.Environment.Exit (flagged by Elastic).
+  --amsi        Optional. Patches AmsiScanBuffer to bypass AMSI.
+  --etw         Optional. Patches ETW EventWrite.
+
+Examples:
+  inline-ea /path/to/Rubeus.exe triage --amsi --etw --patchexit
+  inline-ea /path/to/Powerpick.exe whoami /all --amsi --etw
+```
+
 ## Demo
 View the full demo against all 3 security products on my [website](https://ericesquivel.github.io/posts/inline-ea)
 

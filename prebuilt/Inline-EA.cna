@@ -1,9 +1,17 @@
 #Register command
 beacon_command_register(
 "inline-ea", 
-"Execute .NET assemblies in the current beacon process. Use optional --patchexit flag as the first or last arg to patch System.Environment.Exit (Note this does get flagged by Elastic)", 
-"Synopsis: inline-ea /path/to/Assembly.exe arguments go here\nUse optional --patchexit flag as the first or last arg to patch System.Environment.Exit (Note this does get flagged by Elastic)");
-
+"Execute .NET assemblies in the current beacon process. All optional arguments must be at the end of the command.",
+"Synopsis: inline-ea /path/to/Assembly.exe [arguments...] [--patchexit] [--amsi] [--etw]\n" .
+"Description:\n" .
+"  Execute a .NET assembly in the current beacon process.\n\n" .
+"  --patchexit   Optional. Patches System.Environment.Exit (flagged by Elastic).\n" .
+"  --amsi        Optional. Patches AmsiScanBuffer to bypass AMSI.\n" .
+"  --etw         Optional. Patches ETW EventWrite.\n\n" .
+"Examples:\n" .
+"  inline-ea /path/to/Rubeus.exe triage --amsi --etw --patchexit\n" .
+"  inline-ea /path/to/Powerpick.exe whoami /all --amsi --etw\n"
+);
 
 alias inline-ea {
     $data = substr($0, 9);
